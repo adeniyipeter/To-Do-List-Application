@@ -1,0 +1,32 @@
+<form class="todo-form-container" (ngSubmit)="onSubmit()" novalidate>
+  <div class="input-wrapper">
+    <div class="input-field-group">
+      <input
+        type="text"
+        name="taskTitle"
+        class="task-input"
+        [class.has-error]="errorMessage && isTouched"
+        placeholder="What needs to be done?"
+        [(ngModel)]="taskTitle"
+        (input)="onInputChange()"
+        (blur)="isTouched = true; onInputChange()"
+        [disabled]="isSubmitting"
+        autocomplete="off"
+        aria-label="New task title"
+      />
+      <button
+        type="submit"
+        class="btn btn-primary add-button"
+        [disabled]="isSubmitting || !taskTitle.trim()"
+      >
+        <span *ngIf="!isSubmitting">Add Task</span>
+        <span *ngIf="isSubmitting" class="submitting-state">
+          <span class="spinner-small"></span> Adding...
+        </span>
+      </button>
+    </div>
+    <div *ngIf="errorMessage && isTouched" class="error-feedback" role="alert">
+      {{ errorMessage }}
+    </div>
+  </div>
+</form>

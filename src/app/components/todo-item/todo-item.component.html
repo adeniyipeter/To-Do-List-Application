@@ -1,0 +1,89 @@
+<li
+  class="todo-item-card"
+  [class.completed]="todo.completed"
+  [class.updating]="isUpdating"
+  [class.deleting]="isDeleting"
+>
+  <!-- Normal Display Mode -->
+  <div *ngIf="!isEditing" class="item-view">
+    <label class="checkbox-container">
+      <input
+        type="checkbox"
+        [checked]="todo.completed"
+        (change)="onToggle()"
+        [disabled]="isUpdating || isDeleting"
+        [attr.aria-label]="'Mark ' + todo.title + (todo.completed ? ' pending' : ' completed')"
+      />
+      <span class="custom-checkbox"></span>
+    </label>
+
+    <div class="item-content" (dblclick)="startEdit()">
+      <span class="item-title" [title]="todo.title">{{ todo.title }}</span>
+      <span
+        class="status-badge"
+        [class.status-completed]="todo.completed"
+        [class.status-pending]="!todo.completed"
+      >
+        {{ todo.completed ? 'Completed' : 'Pending' }}
+      </span>
+    </div>
+
+    <div class="item-actions">
+      <button
+        type="button"
+        class="btn-icon edit-btn"
+        (click)="startEdit()"
+        [disabled]="isUpdating || isDeleting"
+        title="Edit task"
+        aria-label="Edit task"
+      >
+        ✏️
+      </button>
+      <button
+        type="button"
+        class="btn-icon delete-btn"
+        (click)="onDelete()"
+        [disabled]="isUpdating || isDeleting"
+        title="Delete task"
+        aria-label="Delete task"
+      >
+        <span *ngIf="!isDeleting">🗑️</span>
+        <span *ngIf="isDeleting" class="spinner-small danger"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Inline Edit Mode -->
+  <div *ngIf="isEditing" class="item-edit-mode">
+    <div class="edit-input-wrapper">
+      <input
+        type="text"
+        class="edit-input"
+        [(ngModel)]="editTitle"
+        (keyup.enter)="saveEdit()"
+        (keyup.escape)="cancelEdit()"
+        [class.has-error]="editError"
+        placeholder="Edit task title..."
+        autofocus
+      />
+      <div *ngIf="editError" class="edit-error-msg">{{ editError }}</div>
+    </div>
+    <div class="edit-actions">
+      <button
+        type="button"
+        class="btn btn-sm btn-success"
+        (click)="saveEdit()"
+        [disabled]="!editTitle.trim()"
+      >
+        Save
+      </button>
+      <button
+        type="button"
+        class="btn btn-sm btn-secondary"
+        (click)="cancelEdit()"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</li>

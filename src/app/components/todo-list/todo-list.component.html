@@ -1,0 +1,155 @@
+<div class="todo-app-card">
+  <!-- Header / Stats Bar -->
+  <header class="card-header">
+    <div class="stats-group">
+      <span class="stat-item">
+        <strong>{{ totalCount }}</strong> Total
+      </span>
+      <span class="stat-divider">•</span>
+      <span class="stat-item pending-stat">
+        <strong>{{ pendingCount }}</strong> Pending
+      </span>
+      <span class="stat-divider">•</span>
+      <span class="stat-item completed-stat">
+        <strong>{{ completedCount }}</strong> Completed
+      </span>
+    </div>
+  </header>
+
+  <!-- Notification Banners -->
+  <div *ngIf="errorMessage" class="alert alert-error" role="alert">
+    <span class="alert-icon">⚠️</span>
+    <span class="alert-text">{{ errorMessage }}</span>
+    <button type="button" class="alert-close" (click)="clearError()" aria-label="Dismiss error">×</button>
+  </div>
+
+  <div *ngIf="successMessage" class="alert alert-success" role="status">
+    <span class="alert-icon">✓</span>
+    <span class="alert-text">{{ successMessage }}</span>
+    <button type="button" class="alert-close" (click)="clearSuccess()" aria-label="Dismiss message">×</button>
+  </div>
+
+  <!-- Add Task Form Component -->
+  <app-todo-form
+    [isSubmitting]="isAdding"
+    (addTodo)="handleAddTodo($event)"
+  ></app-todo-form>
+
+  <!-- Filter Controls -->
+  <nav class="filters-nav" aria-label="Task filters">
+    <div class="filter-buttons">
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="currentFilter === 'all'"
+        (click)="setFilter('all')"
+        [attr.aria-pressed]="currentFilter === 'all'"
+      >
+        All ({{ totalCount }})
+      </button>
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="currentFilter === 'pending'"
+        (click)="setFilter('pending')"
+        [attr.aria-pressed]="currentFilter === 'pending'"
+      >
+        Pending ({{ pendingCount }})
+      </button>
+      <button
+        type="button"
+        class="filter-btn"
+        [class.active]="currentFilter === 'completed'"
+        (click)="setFilter('completed')"
+        [attr.aria-pressed]="currentFilter === 'completed'"
+      >
+        Completed ({{ completedCount }})
+      </button>
+    </div>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="state-container loading-state">
+    <div class="spinner-large"></div>
+    <p class="state-title">Loading todos...</p>
+    <p class="state-subtitle">Fetching data from JSONPlaceholder API</p>
+  </div>
+
+  <!-- Error State (when initial load failed and list is empty) -->
+  <div *ngIf="!isLoading && errorMessage && todos.length === 0" class="state-container error-state">
+    <div class="state-icon">⚠️</div>
+    <p class="state-title">Unable to load todos. Please try again.</p>
+    <button type="button" class="btn btn-primary retry-btn" (click)="fetchTodos()">
+      Retry
+    </button>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && !errorMessage && filteredTodos.length === 0" class="state-container empty-state">
+    <div class="state-icon">📋</div>
+    <ng-container *ngIf="todos.length === 0; else noMatchTemplate">
+      <p class="state-title">No tasks yet. Add a task to get started.</p>
+    </ng-container>
+    <ng-template #noMatchTemplate>
+      <p class="state-title">No {{ currentFilter }} tasks found.</p>
+      <button type="button" class="btn btn-secondary clear-filter-btn" (click)="setFilter('all')">
+        Show All Tasks
+      </button>
+    </ng-template>
+  </div>
+
+  <!-- Todos List -->
+  <ul *ngIf="!isLoading && filteredTodos.length > 0" class="todo-items-list" aria-label="Tasks list">
+    <app-todo-item
+      *ngFor="let todo of paginatedTodos"
+      [todo]="todo"
+      [isUpdating]="updatingTodoIds.has(todo.id)"
+      [isDeleting]="deletingTodoIds.has(todo.id)"
+      (toggleComplete)="handleToggleComplete($event)"
+      (editTodo)="handleEditTodo($event)"
+      (deleteTodo)="handleDeleteTodo($event)"
+    ></app-todo-item>
+  </ul>
+
+  <!-- Pagination Controls -->
+  <footer *ngIf="!isLoading && filteredTodos.length > pageSize" class="pagination-footer">
+    <div class="pagination-info">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} to
+      {{ (currentPage * pageSize) > filteredTodos.length ? filteredTodos.length : (currentPage * pageSize) }}
+      of {{ filteredTodos.length }} tasks
+    </div>
+
+    <div class="pagination-controls">
+      <button
+        type="button"
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+        aria-label="Previous page"
+      >
+        ← Prev
+      </button>
+
+      <button
+        *ngFor="let page of pages"
+        type="button"
+        class="page-btn page-number"
+        [class.active]="currentPage === page"
+        (click)="goToPage(page)"
+        [attr.aria-current]="currentPage === page ? 'page' : null"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        type="button"
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+        aria-label="Next page"
+      >
+        Next →
+      </button>
+    </div>
+  </footer>
+</div>
